@@ -255,7 +255,7 @@
       }
     });
 
-    const GROQ_API_KEY = 'PEGA_TU_KEY_AQUI';
+    
     // ==========================================
 
     const COLORS = ['#7c5cfc','#fc5c7d','#5cf0fc','#fcb95c','#5cfc8a','#fc5cf0','#fce45c'];
@@ -372,39 +372,21 @@
       document.getElementById('resultBox').style.display = 'block';
 
       try {
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const resp = await fetch('/api/reto', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${GROQ_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            max_tokens: 300,
-            messages: [{
-              role: 'user',
-              content: `Eres un generador de retos para videojuegos. Genera UN reto para el juego EXACTO "${game}". Si el nombre es genérico (ej: "Pokemon" en vez de "Pokemon Scarlet"), elige la versión más popular y especifícala en el reto (ej: "En Pokemon Scarlet/Violet...").
-REGLAS IMPORTANTES:
-- Usa nombres reales de habilidades, modos de juego, mecánicas o personajes que REALMENTE existen en el juego.
-- NUNCA inventes items, objetos, habilidades o personajes. Si no estás 100% seguro de que algo existe, NO lo menciones.
-- Para mencionar habilidades, usa términos generales reales: por ejemplo en LoL usa "la habilidad R (ultimate)" en vez de un item inventado.
-- Enfoca el reto en mecánicas de gameplay claras: lograr X kills, ganar en Y tiempo, completar Z objetivo, etc.
-- El reto debe ser entendible por cualquier persona. Máximo 2 condiciones.
-Responde SOLO con JSON sin backticks ni texto extra: {"reto":"descripción clara y específica del reto","dificultad":"Fácil|Medio|Difícil"}`
-            }]
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ game, cat })
         });
 
-        const data = await resp.json();
+        const parsed = await resp.json();
 
-        if (data.error) {
-          document.getElementById('retoContent').innerHTML = `<div class="reto-text" style="color:#f87171">Error de API: ${data.error.message}</div>`;
+        if (parsed.error) {
+          document.getElementById('retoContent').innerHTML = `<div class="reto-text" style="color:#f87171">Error: ${parsed.error}</div>`;
           return;
         }
 
-        const text = data.choices[0].message.content;
-        const clean = text.replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(clean);
+        // dummy line to avoid parse issues
+        const _dummy = true;
         const dc = parsed.dificultad === 'Fácil' ? 'facil' : parsed.dificultad === 'Difícil' ? 'dificil' : 'medio';
         document.getElementById('retoContent').innerHTML = `
           <div class="reto-text">${parsed.reto}</div>
