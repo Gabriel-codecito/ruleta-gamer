@@ -21,15 +21,7 @@ export default async function handler(req, res) {
         max_tokens: 300,
         messages: [{
           role: 'user',
-          content: `Eres un generador de retos para videojuegos. Genera UN reto para el juego EXACTO "${game}". Si el nombre es genérico (ej: "Pokemon" en vez de "Pokemon Scarlet"), elige la versión más popular y especifícala en el reto.
-REGLAS IMPORTANTES:
-- Usa nombres reales de habilidades, modos de juego, mecánicas o personajes que REALMENTE existen en el juego.
-- NUNCA inventes items, objetos, habilidades o personajes. Si no estás 100% seguro de que algo existe, NO lo menciones.
-- Para mencionar habilidades, usa términos generales reales: por ejemplo en LoL usa "la habilidad R (ultimate)" en vez de un item inventado.
-- Enfoca el reto en mecánicas de gameplay claras: lograr X kills, ganar en Y tiempo, completar Z objetivo, etc.
-- El reto debe ser entendible por cualquier persona. Máximo 2 condiciones.
-- Tipo de reto: ${cat || 'cualquiera'}
-Responde SOLO con JSON sin backticks ni texto extra: {"reto":"descripción clara y específica del reto","dificultad":"Fácil|Medio|Difícil"}`
+          content: `Eres un generador de retos para videojuegos. Genera UN reto para el juego "${game}" de tipo "${cat || 'cualquiera'}". Usa mecánicas reales. NUNCA inventes items. Máximo 2 condiciones. Responde SOLO con JSON: {"reto":"descripción","dificultad":"Fácil|Medio|Difícil"}`
         }]
       })
     });
