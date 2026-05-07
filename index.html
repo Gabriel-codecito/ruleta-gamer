@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruleta Gamer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e40;
+      --accent: #7c5cfc;
+      --accent2: #fc5c7d;
+      --text: #f0f0f5;
+      --muted: #7070a0;
+      --facil: #1a3a2a;
+      --facil-text: #4ade80;
+      --medio: #3a2a10;
+      --medio-text: #fbbf24;
+      --dificil: #3a1010;
+      --dificil-text: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 0.05em;
+      text-align: center;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .container { max-width: 600px; margin: 0 auto; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+    .row { display: flex; gap: 8px; margin-bottom: 10px; }
+    input, select {
+      flex: 1; padding: 10px 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px;
+      font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+    .btn {
+      padding: 10px 18px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border: none; border-radius: 12px; color: #fff; cursor: pointer; margin-top: 1rem;
+      font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; font-size: 1.1rem;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; min-height: 34px; }
+    .tag {
+      display: flex; align-items: center; gap: 6px; padding: 5px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 999px; font-size: 13px; color: var(--text);
+    }
+    .tag button { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0; }
+    .tag button:hover { color: var(--accent2); }
+    .empty { color: var(--muted); font-size: 13px; padding: 4px 0; }
+    .autocomplete-wrap { position: relative; flex: 1; }
+    .autocomplete-list {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+      background: var(--surface2); border: 1px solid var(--accent);
+      border-radius: 10px; margin-top: 4px; max-height: 200px;
+      overflow-y: auto; display: none;
+    }
+    .autocomplete-item {
+      padding: 9px 14px; font-size: 14px; cursor: pointer;
+      color: var(--text); transition: background 0.15s;
+    }
+    .autocomplete-item:hover, .autocomplete-item.active {
+      background: var(--surface); color: var(--accent);
+    }
+    .wheel-wrap { display: flex; justify-content: center; align-items: center; margin: 1.25rem 0; position: relative; }
+    .wheel-arrow {
+      position: absolute;
+      right: calc(50% - 148px);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-top: 13px solid transparent;
+      border-bottom: 13px solid transparent;
+      border-right: 22px solid #fc5c7d;
+      z-index: 10;
+    }
+    canvas { border-radius: 50%; display: block; }
+    .label-section { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .result-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem; margin-top: 1rem;
+      display: none; animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .result-game { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.05em; color: var(--text); margin-bottom: 1rem; }
+    .reto-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .reto-text { font-size: 15px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+    .facil { background: var(--facil); color: var(--facil-text); }
+    .medio { background: var(--medio); color: var(--medio-text); }
+    .dificil { background: var(--dificil); color: var(--dificil-text); }
+    .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+    .dots { display: flex; gap: 4px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ruleta Gamer</h1>
+    <p class="subtitle">Gira, descubre qué jugar y recibe un reto único generado por IA</p>
+
+    <div class="card">
+      <div class="row">
+        <div class="autocomplete-wrap">
+          <input id="gameInput" type="text" placeholder="Ej: League of Legends, Minecraft, Fortnite..." onkeydown="handleKey(event)" oninput="onInput()" autocomplete="off">
+          <div class="autocomplete-list" id="acList"></div>
+        </div>
+        <button class="btn" onclick="addGame()">+ Agregar</button>
+      </div>
+      <div style="margin-bottom:10px">
+        <select id="spinCat">
+          <option value="cualquiera">Cualquier tipo de reto</option>
+          <option value="velocidad">Velocidad / tiempo</option>
+          <option value="restricción">Restricción extrema</option>
+          <option value="exploración">Exploración / colección</option>
+          <option value="social">Social / multijugador</option>
+        </select>
+      </div>
+      <div class="tags" id="tagList">
+        <span class="empty">Agrega al menos un juego para comenzar</span>
+      </div>
+      <div class="wheel-wrap">
+        <div class="wheel-arrow"></div>
+        <canvas id="wheelCanvas" width="270" height="270"></canvas>
+      </div>
+      <button class="btn-primary" id="spinBtn" onclick="spinWheel()">GIRAR Y RECIBIR RETO</button>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div class="label-section">Juego seleccionado</div>
+      <div class="result-game" id="resultGame"></div>
+      <div class="reto-card">
+        <div class="label-section">Reto generado por IA</div>
+        <div id="retoContent"></div>
+      </div>
+    </div>
+  <div style="text-align:center; margin-top: 1.5rem; padding-bottom: 1rem;">
+    <p style="color: #7070a0; font-size: 13px; margin-bottom: 12px;">¿Te gustó la app? Apóyame con un café ☕</p>
+    <a href="https://ko-fi.com/r0kan" target="_blank" style="
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px;
+      background: #FF5E5B;
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    " onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+      ☕ Apóyame en Ko-fi
+    </a>
+  </div>
+
+  <script>
+    // ==========================================
+    // PON TU API KEY DE GROQ AQUÍ ABAJO
+    // Consíguela gratis en: console.groq.com
+    // ==========================================
+    const GAMES = [
+      'League of Legends','Valorant','Fortnite','Minecraft','Counter-Strike 2',
+      'Apex Legends','Overwatch 2','Call of Duty: Warzone','Grand Theft Auto V',
+      'Red Dead Redemption 2','The Witcher 3','Elden Ring','Dark Souls III',
+      'Sekiro: Shadows Die Twice','Cyberpunk 2077','God of War','God of War Ragnarök',
+      'The Last of Us','Spider-Man 2','Hogwarts Legacy','Zelda: Breath of the Wild',
+      'Zelda: Tears of the Kingdom','Super Mario Odyssey','Mario Kart 8','Pokémon Scarlet',
+      'Pokémon Violet','Pokémon Sword','Pokémon Shield','FIFA 24','EA Sports FC 25',
+      'NBA 2K24','Rocket League','Dota 2','World of Warcraft','Diablo IV',
+      'Starcraft II','Hearthstone','Among Us','Fall Guys','Stardew Valley',
+      'Terraria','Hollow Knight','Celeste','Hades','Dead Cells','Vampire Survivors',
+      'Baldurs Gate 3','Phasmophobia','Dead by Daylight','Rust','ARK: Survival Evolved',
+      'Palworld','Lethal Company','Delta Force','Rainbow Six Siege','Battlefield 2042',
+      'Destiny 2','Path of Exile','Lost Ark','Final Fantasy XIV','Final Fantasy XVI',
+      'Monster Hunter World','Monster Hunter Rise','Dragon Ball FighterZ','Mortal Kombat 1',
+      'Street Fighter 6','Tekken 8','Genshin Impact','Honkai: Star Rail','Wuthering Waves',
+      'Clash Royale','Clash of Clans','Brawl Stars','Mobile Legends','PUBG Mobile',
+      'Free Fire','Roblox','Geometry Dash','Subway Surfers'
+    ];
+
+    let acIndex = -1;
+
+    function onInput() {
+      const val = document.getElementById('gameInput').value.trim();
+      const list = document.getElementById('acList');
+      acIndex = -1;
+      if (val.length < 2) { list.style.display = 'none'; return; }
+      const matches = GAMES.filter(g => g.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
+      if (!matches.length) { list.style.display = 'none'; return; }
+      list.innerHTML = matches.map((g, i) =>
+        `<div class="autocomplete-item" onmousedown="selectGame('${g}')">${g}</div>`
+      ).join('');
+      list.style.display = 'block';
+    }
+
+    function selectGame(name) {
+      document.getElementById('gameInput').value = name;
+      document.getElementById('acList').style.display = 'none';
+    }
+
+    function handleKey(e) {
+      const list = document.getElementById('acList');
+      const items = list.querySelectorAll('.autocomplete-item');
+      if (e.key === 'ArrowDown') {
+        acIndex = Math.min(acIndex + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+      } else if (e.key === 'ArrowUp') {
+        acIndex = Math.max(acIndex - 1, -1);
+        items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+      } else if (e.key === 'Enter') {
+        if (acIndex >= 0 && items[acIndex]) {
+          selectGame(items[acIndex].textContent);
+        } else {
+          addGame();
+        }
+      } else if (e.key === 'Escape') {
+        list.style.display = 'none';
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.autocomplete-wrap')) {
+        document.getElementById('acList').style.display = 'none';
+      }
+    });
+
+    const GROQ_API_KEY = 'PEGA_TU_KEY_AQUI';
+    // ==========================================
+
+    const COLORS = ['#7c5cfc','#fc5c7d','#5cf0fc','#fcb95c','#5cfc8a','#fc5cf0','#fce45c'];
+    let games = [], spinning = false, angle = 0;
+
+    function addGame() {
+      const inp = document.getElementById('gameInput');
+      const v = inp.value.trim();
+      if (!v) return;
+      games.push(v);
+      inp.value = '';
+      renderTags();
+      drawWheel();
+    }
+
+    function removeGame(i) {
+      games.splice(i, 1);
+      renderTags();
+      drawWheel();
+    }
+
+    function renderTags() {
+      const el = document.getElementById('tagList');
+      if (!games.length) {
+        el.innerHTML = '<span class="empty">Agrega al menos un juego para comenzar</span>';
+        return;
+      }
+      el.innerHTML = games.map((g, i) =>
+        `<div class="tag">${g}<button onclick="removeGame(${i})" title="Eliminar">×</button></div>`
+      ).join('');
+    }
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const cx = 135, cy = 135, r = 125;
+      ctx.clearRect(0, 0, 270, 270);
+
+      if (!games.length) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#1a1a24'; ctx.fill();
+        ctx.strokeStyle = '#2e2e40'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#7070a0'; ctx.font = '14px Inter';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('Agrega juegos', cx, cy);
+        return;
+      }
+
+      const arc = (Math.PI * 2) / games.length;
+      games.forEach((g, i) => {
+        const start = angle + i * arc - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, start + arc);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length] + '33'; ctx.fill();
+        ctx.strokeStyle = COLORS[i % COLORS.length]; ctx.lineWidth = 2; ctx.stroke();
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#f0f0f5';
+        ctx.font = `${Math.min(13, 110 / games.length + 7)}px Inter`;
+        ctx.fillText(g.length > 11 ? g.slice(0, 11) + '…' : g, r - 10, 4);
+        ctx.restore();
+      });
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f0f13'; ctx.fill();
+      ctx.strokeStyle = '#2e2e40'; ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    function spinWheel() {
+      if (!games.length || spinning) return;
+      spinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('resultBox').style.display = 'none';
+
+      const spins = (Math.random() * 4 + 6) * Math.PI * 2;
+      const duration = 3200;
+      const start = performance.now();
+      const startAngle = angle;
+
+      function animate(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        angle = startAngle + spins * ease;
+        drawWheel();
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          const arc = (Math.PI * 2) / games.length;
+          const offset = ((angle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+          const pointer = (Math.PI / 2 + (Math.PI * 2) - offset) % (Math.PI * 2);
+          const idx = Math.floor(pointer / arc) % games.length;
+          showResult(games[idx]);
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    async function showResult(game) {
+      const cat = document.getElementById('spinCat').value;
+      document.getElementById('resultGame').textContent = game;
+      document.getElementById('retoContent').innerHTML = `
+        <div class="loading">
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <span>Generando reto para ${game}...</span>
+        </div>`;
+      document.getElementById('resultBox').style.display = 'block';
+
+      try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${GROQ_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            max_tokens: 300,
+            messages: [{
+              role: 'user',
+              content: `Eres un generador de retos para videojuegos. Genera UN reto para el juego EXACTO "${game}". Si el nombre es genérico (ej: "Pokemon" en vez de "Pokemon Scarlet"), elige la versión más popular y especifícala en el reto (ej: "En Pokemon Scarlet/Violet...").
+REGLAS IMPORTANTES:
+- Usa nombres reales de habilidades, modos de juego, mecánicas o personajes que REALMENTE existen en el juego.
+- NUNCA inventes items, objetos, habilidades o personajes. Si no estás 100% seguro de que algo existe, NO lo menciones.
+- Para mencionar habilidades, usa términos generales reales: por ejemplo en LoL usa "la habilidad R (ultimate)" en vez de un item inventado.
+- Enfoca el reto en mecánicas de gameplay claras: lograr X kills, ganar en Y tiempo, completar Z objetivo, etc.
+- El reto debe ser entendible por cualquier persona. Máximo 2 condiciones.
+Responde SOLO con JSON sin backticks ni texto extra: {"reto":"descripción clara y específica del reto","dificultad":"Fácil|Medio|Difícil"}`
+            }]
+          })
+        });
+
+        const data = await resp.json();
+
+        if (data.error) {
+          document.getElementById('retoContent').innerHTML = `<div class="reto-text" style="color:#f87171">Error de API: ${data.error.message}</div>`;
+          return;
+        }
+
+        const text = data.choices[0].message.content;
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        const dc = parsed.dificultad === 'Fácil' ? 'facil' : parsed.dificultad === 'Difícil' ? 'dificil' : 'medio';
+        document.getElementById('retoContent').innerHTML = `
+          <div class="reto-text">${parsed.reto}</div>
+          <span class="badge ${dc}">${parsed.dificultad}</span>`;
+      } catch (e) {
+        document.getElementById('retoContent').innerHTML = `
+          <div class="reto-text" style="color:#f87171">
+            Error: ${e.message}. Verifica tu API key en console.groq.com
+          </div>`;
+      }
+    }
+
+    drawWheel();
+  </script>
+</body>
+</html>
