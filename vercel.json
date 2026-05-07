@@ -1,11 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "api/reto.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/reto", "dest": "/api/reto.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  "functions": {
+    "api/reto.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }
