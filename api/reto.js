@@ -2,9 +2,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return res.status(500).json({ error: 'API key no configurada en Vercel' });
 
   const { game, cat } = req.body;
   if (!game) return res.status(400).json({ error: 'Falta el nombre del juego' });
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
@@ -26,9 +28,12 @@ export default async function handler(req, res) {
       })
     });
 
-    const data = await response.json();
-    if (data.error) return res.status(500).json({ error: data.error.message });
+    if (!response.ok) {
+      const err = await response.json();
+      return res.status(500).json({ error: err.error?.message || 'Error de Groq' });
+    }
 
+    const data = await response.json();
     const text = data.choices[0].message.content;
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
