@@ -1,1 +1,8 @@
-{}
+{
+  "functions": {
+    "api/reto.js": {
+      "maxDuration": 15
+    }
+  }
+}
+
